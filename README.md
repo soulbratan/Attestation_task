@@ -29,7 +29,7 @@ PostgreSQL.
 
 ```bash
 # 1. Клонировать репозиторий
-git clone https://github.com/yourusername/electronics-network.git
+git clone https://github.com/soulbratan/Attestation_task
 cd electronics-network
 
 # 2. Создать виртуальное окружение
@@ -39,7 +39,7 @@ source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate  # Windows
 
 # 3. Установить зависимости
-pip install -r requirements.txt
+poetry update
 
 # 4. Настроить переменные окружения
 cp .env.example .env
@@ -51,7 +51,10 @@ python manage.py migrate
 # 6. Создать тестовые данные
 python manage.py createtestdata
 
-# 7. Запустить сервер
+# 7. Создать суперпользователя
+python manage.py createsuperuser
+
+# 8. Запустить сервер
 python manage.py runserver
 ```
 Перейдите по адресу:
