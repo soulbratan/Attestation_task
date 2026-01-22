@@ -1,6 +1,6 @@
 from django.db.models import Count, Sum
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -91,27 +91,6 @@ class NetworkNodeViewSet(viewsets.ModelViewSet):
                 "top_cities": list(cities),
             }
         )
-
-    @action(detail=True, methods=["post"])
-    def clear_debt(self, request, pk=None):
-        """Очистить задолженность у конкретного звена."""
-        node = self.get_object()
-        node.debt_to_supplier = 0
-        node.save()
-
-        serializer = self.get_serializer(node)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=["post"])
-    def bulk_clear_debt(self, request):
-        """Массовая очистка задолженности."""
-        ids = request.data.get("ids", [])
-        if not ids:
-            return Response({"error": "Не указаны ID звеньев."}, status=status.HTTP_400_BAD_REQUEST)
-
-        updated = NetworkNode.objects.filter(id__in=ids).update(debt_to_supplier=0)
-
-        return Response({"message": f"Задолженность очищена у {updated} звеньев.", "updated_count": updated})
 
     @action(detail=True, methods=["get"])
     def hierarchy(self, request, pk=None):

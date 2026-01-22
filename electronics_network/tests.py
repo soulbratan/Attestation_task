@@ -407,18 +407,6 @@ class NetworkNodeAPITests(APITestCase):
         self.retail.refresh_from_db()
         self.assertEqual(self.retail.debt_to_supplier, 50000.00)
 
-    def test_clear_debt_action(self):
-        """Тест action для очистки задолженности."""
-        clear_debt_url = reverse("network-node-clear-debt", args=[self.retail.id])
-
-        response = self.client.post(clear_debt_url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Проверяем, что долг обнулился
-        self.retail.refresh_from_db()
-        self.assertEqual(self.retail.debt_to_supplier, 0)
-
     def test_filter_by_country(self):
         """Тест фильтрации по стране."""
         response = self.client.get(self.node_list_url, {"country": "Россия"})

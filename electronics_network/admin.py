@@ -1,6 +1,8 @@
 from decimal import Decimal
 
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from .models import NetworkNode, Product
@@ -36,7 +38,7 @@ class NetworkNodeAdmin(admin.ModelAdmin):
         "get_node_type_display",
         "level",
         "city",
-        "supplier_name",
+        "supplier_link",
         "debt_to_supplier",
         "products_count",
         "created_at",
@@ -83,12 +85,36 @@ class NetworkNodeAdmin(admin.ModelAdmin):
     # Admin actions
     actions = ["clear_debt"]
 
-    def supplier_name(self, obj):
-        """Имя поставщика."""
-        return obj.supplier.name if obj.supplier else "-"
+    def supplier_link(self, obj):
+        """Ссылка на страницу поставщика."""
+        if obj.supplier:
+            url = reverse("admin:electronics_network_networknode_change", args=[obj.supplier.id])
+            return format_html("<a href='{}'>{}</a>", url, obj.supplier.name)
+        return "-"
 
-    supplier_name.short_description = _("Поставщик")
-    supplier_name.admin_order_field = "supplier__name"
+    def get_readonly_fields(self, request, obj=None):
+        """Возвращаем поля только для чтения."""
+        readonly_fields = list(super().get_readonly_fields(request, obj))
+
+        # Добавляем поле supplier_link в форму редактирования
+        if obj and obj.supplier:
+            readonly_fields.append("supplier_link_display")
+
+        return readonly_fields
+
+    def supplier_link_display(self, obj):
+        """Показываем ссылку на поставщика в форме редактирования."""
+        if obj.supplier:
+            url = reverse("admin:electronics_network_networknode_change", args=[obj.supplier.id])
+            return format_html("<a href='{}'>{}</a>", url, obj.supplier.name)
+        return "Нет поставщика"
+
+    supplier_link_display.short_description = _("Поставщик")
+    supplier_link_display.allow_tags = True
+
+    supplier_link.short_description = _("Поставщик")
+    supplier_link.admin_order_field = "supplier__name"
+    supplier_link.allow_tags = True  # Разрешаем HTML теги
 
     def products_count(self, obj):
         """Количество продуктов."""
@@ -109,7 +135,7 @@ class NetworkNodeAdmin(admin.ModelAdmin):
         """Оптимизация запросов."""
         return super().get_queryset(request).select_related("supplier").prefetch_related("products")
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, request, obj=None):   # noqa
         """Настройка readonly полей в зависимости от состояния объекта."""
         readonly_fields = list(self.readonly_fields)
 

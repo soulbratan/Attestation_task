@@ -31,9 +31,9 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_active_employee", True)
 
         if extra_fields.get("is_staff") is not True:
-            raise ValueError("Superuser must have is_staff=True.")
+            raise ValueError("У суперпользователя должен быть параметр is_staff=True")
         if extra_fields.get("is_superuser") is not True:
-            raise ValueError("Superuser must have is_superuser=True.")
+            raise ValueError("Необходимо установить параметр is_superuser=True для суперпользователя")
 
         return self._create_user(email, password, **extra_fields)
 
@@ -49,7 +49,7 @@ class User(AbstractUser):
     is_active_employee = models.BooleanField(
         _("active employee"),
         default=False,
-        help_text=_("Designates whether this user is an active employee with API access."),
+        help_text=_("Указать, является ли данный пользователь действующим сотрудником с доступом к API"),
     )
 
     USERNAME_FIELD = "email"
