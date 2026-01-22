@@ -22,8 +22,8 @@ class UserRegistrationView(generics.CreateAPIView):
             # Возвращаем информацию о пользователе
             user_data = UserSerializer(user).data
             return Response({
-                'user': user_data,
-                'message': 'Регистрация успешна. Ожидайте активации администратором.'
+                "user": user_data,
+                "message": "Регистрация успешна. Ожидайте активации администратором."
             }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -37,7 +37,7 @@ class UserLoginView(APIView):
         serializer = UserLoginSerializer(data=request.data)
 
         if serializer.is_valid():
-            user = serializer.validated_data['user']
+            user = serializer.validated_data["user"]
 
             # Создаем JWT токены
             refresh = RefreshToken.for_user(user)
@@ -46,9 +46,9 @@ class UserLoginView(APIView):
             login(request, user)
 
             return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-                'user': UserSerializer(user).data
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                "user": UserSerializer(user).data
             })
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -11,7 +11,7 @@ class UserManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
         """Создает и сохраняет пользователя с email и паролем."""
         if not email:
-            raise ValueError('Email должен быть указан')
+            raise ValueError("Email должен быть указан")
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -20,20 +20,20 @@ class UserManager(BaseUserManager):
 
     def create_user(self, email, password=None, **extra_fields):
         """Создает обычного пользователя."""
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault("is_staff", False)
+        extra_fields.setdefault("is_superuser", False)
         return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email, password, **extra_fields):
         """Создает суперпользователя."""
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active_employee', True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active_employee", True)
 
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
 
         return self._create_user(email, password, **extra_fields)
 
@@ -44,22 +44,22 @@ class User(AbstractUser):
     Используем email в качестве уникального идентификатора.
     """
     username = None
-    email = models.EmailField(_('email address'), unique=True)
+    email = models.EmailField(_("email address"), unique=True)
     is_active_employee = models.BooleanField(
-        _('active employee'),
+        _("active employee"),
         default=False,
-        help_text=_('Designates whether this user is an active employee with API access.')
+        help_text=_("Designates whether this user is an active employee with API access.")
     )
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     objects = UserManager()
 
     class Meta:
-        verbose_name = _('user')
-        verbose_name_plural = _('users')
-        ordering = ['email']
+        verbose_name = _("user")
+        verbose_name_plural = _("users")
+        ordering = ["email"]
 
     def __str__(self):
         return self.email
