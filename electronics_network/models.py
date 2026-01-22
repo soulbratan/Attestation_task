@@ -11,32 +11,32 @@ class Product(models.Model):
     """
 
     name = models.CharField(
-        _('название продукта'),
+        _("название продукта"),
         max_length=255,
-        help_text=_('Название продукта/оборудования')
+        help_text=_("Название продукта/оборудования")
     )
 
     model = models.CharField(
-        _('модель продукта'),
+        _("модель продукта"),
         max_length=255,
-        help_text=_('Модель продукта')
+        help_text=_("Модель продукта")
     )
 
     release_date = models.DateField(
-        _('дата выхода продукта'),
-        help_text=_('Дата выхода продукта на рынок')
+        _("дата выхода продукта"),
+        help_text=_("Дата выхода продукта на рынок")
     )
 
     created_at = models.DateTimeField(
-        _('время создания'),
+        _("время создания"),
         auto_now_add=True
     )
 
     class Meta:
-        verbose_name = _('продукт')
-        verbose_name_plural = _('продукты')
-        ordering = ['-release_date', 'name']
-        unique_together = ['name', 'model']  # Уникальная комбинация имя+модель
+        verbose_name = _("продукт")
+        verbose_name_plural = _("продукты")
+        ordering = ["-release_date", "name"]
+        unique_together = ["name", "model"]  # Уникальная комбинация имя+модель
 
     def __str__(self):
         return f"{self.name} ({self.model})"
@@ -54,113 +54,113 @@ class NetworkNode(models.Model):
     """
 
     class NodeType(models.TextChoices):
-        FACTORY = 'factory', _('Завод')
-        RETAIL = 'retail', _('Розничная сеть')
-        INDIVIDUAL = 'individual', _('Индивидуальный предприниматель')
+        FACTORY = "factory", _("Завод")
+        RETAIL = "retail", _("Розничная сеть")
+        INDIVIDUAL = "individual", _("Индивидуальный предприниматель")
 
     # Основная информация
     name = models.CharField(
-        _('название'),
+        _("название"),
         max_length=255,
         unique=True,
-        help_text=_('Название звена сети')
+        help_text=_("Название звена сети")
     )
 
     node_type = models.CharField(
-        _('тип звена'),
+        _("тип звена"),
         max_length=20,
         choices=NodeType.choices,
         default=NodeType.FACTORY,
-        help_text=_('Тип звена в сети')
+        help_text=_("Тип звена в сети")
     )
 
     # Контактная информация
     email = models.EmailField(
-        _('email'),
+        _("email"),
         max_length=255,
         unique=True,  # ✅ Email должен быть уникальным
         validators=[EmailValidator()],
-        help_text=_('Контактный email')
+        help_text=_("Контактный email")
     )
 
     country = models.CharField(
-        _('страна'),
+        _("страна"),
         max_length=100,
-        help_text=_('Страна расположения')
+        help_text=_("Страна расположения")
     )
 
     city = models.CharField(
-        _('город'),
+        _("город"),
         max_length=100,
-        help_text=_('Город расположения')
+        help_text=_("Город расположения")
     )
 
     street = models.CharField(
-        _('улица'),
+        _("улица"),
         max_length=255,
-        help_text=_('Улица расположения')
+        help_text=_("Улица расположения")
     )
 
     house_number = models.CharField(
-        _('номер дома'),
+        _("номер дома"),
         max_length=20,
-        help_text=_('Номер дома/строения')
+        help_text=_("Номер дома/строения")
     )
 
     # Иерархические связи
     supplier = models.ForeignKey(
-        'self',
+        "self",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='clients',
-        verbose_name=_('поставщик'),
-        help_text=_('Поставщик оборудования (предыдущее звено в цепочке)')
+        related_name="clients",
+        verbose_name=_("поставщик"),
+        help_text=_("Поставщик оборудования (предыдущее звено в цепочке)")
     )
 
     # Связь с продуктами (ManyToMany)
     products = models.ManyToManyField(
         Product,
-        related_name='network_nodes',
-        verbose_name=_('продукты'),
-        help_text=_('Продукты, которые поставляет это звено')
+        related_name="network_nodes",
+        verbose_name=_("продукты"),
+        help_text=_("Продукты, которые поставляет это звено")
     )
 
     # Финансовая информация
     debt_to_supplier = models.DecimalField(
-        _('задолженность перед поставщиком'),
+        _("задолженность перед поставщиком"),
         max_digits=12,
         decimal_places=2,
         default=0.00,
         validators=[MinValueValidator(0)],
-        help_text=_('Задолженность в денежном выражении (до копеек)')
+        help_text=_("Задолженность в денежном выражении (до копеек)")
     )
 
     # Системные поля
     created_at = models.DateTimeField(
-        _('время создания'),
+        _("время создания"),
         auto_now_add=True,
-        help_text=_('Время создания записи')
+        help_text=_("Время создания записи")
     )
 
     level = models.IntegerField(
-        _('уровень в иерархии'),
+        _("уровень в иерархии"),
         default=0,
         editable=False,
-        help_text=_('Уровень в иерархии сети (0 - завод)')
+        help_text=_("Уровень в иерархии сети (0 - завод)")
     )
 
     class Meta:
-        verbose_name = _('звено сети')
-        verbose_name_plural = _('звенья сети')
-        ordering = ['-created_at']
+        verbose_name = _("звено сети")
+        verbose_name_plural = _("звенья сети")
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['supplier']),
-            models.Index(fields=['level']),
-            models.Index(fields=['city']),
-            models.Index(fields=['country']),
-            models.Index(fields=['debt_to_supplier']),
-            models.Index(fields=['email']),  # Индекс для уникального email
+            models.Index(fields=["supplier"]),
+            models.Index(fields=["level"]),
+            models.Index(fields=["city"]),
+            models.Index(fields=["country"]),
+            models.Index(fields=["debt_to_supplier"]),
+            models.Index(fields=["email"]),  # Индекс для уникального email
         ]
 
     def __str__(self):
@@ -184,17 +184,17 @@ class NetworkNode(models.Model):
         # 1. Завод не может иметь поставщика
         if self.node_type == self.NodeType.FACTORY and self.supplier:
             raise ValidationError({
-                'supplier': _('Завод не может иметь поставщика.')
+                "supplier": _("Завод не может иметь поставщика.")
             })
 
         # 2. Завод всегда должен быть на уровне 0
         if self.node_type == self.NodeType.FACTORY and self.supplier is None and self.level != 0:
-            raise ValidationError(_('Завод должен быть на уровне 0.'))
+            raise ValidationError(_("Завод должен быть на уровне 0."))
 
         # 3. Нельзя быть своим собственным поставщиком
         if self.supplier and self.supplier == self:
             raise ValidationError({
-                'supplier': _('Звено не может быть своим собственным поставщиком.')
+                "supplier": _("Звено не может быть своим собственным поставщиком.")
             })
 
         # 4. Проверка циклических ссылок
@@ -204,7 +204,7 @@ class NetworkNode(models.Model):
             while current:
                 if current.id in visited:
                     raise ValidationError({
-                        'supplier': _('Обнаружена циклическая ссылка в цепочке поставщиков.')
+                        "supplier": _("Обнаружена циклическая ссылка в цепочке поставщиков.")
                     })
                 if current.id:
                     visited.add(current.id)
@@ -214,14 +214,14 @@ class NetworkNode(models.Model):
         max_level = 10
         if self.level > max_level:
             raise ValidationError(
-                _('Превышен максимальный уровень иерархии (%(max)s).'),
-                params={'max': max_level}
+                _("Превышен максимальный уровень иерархии (%(max)s)."),
+                params={"max": max_level}
             )
 
         # 6. Завод не может иметь задолженность
         if self.node_type == self.NodeType.FACTORY and self.debt_to_supplier > 0:
             raise ValidationError({
-                'debt_to_supplier': _('Завод не может иметь задолженность перед поставщиком.')
+                "debt_to_supplier": _("Завод не может иметь задолженность перед поставщиком.")
             })
 
     def get_full_address(self):
@@ -237,7 +237,7 @@ class NetworkNode(models.Model):
             path.insert(0, current.name)
             current = current.supplier
 
-        return ' → '.join(path) if path else self.name
+        return " → ".join(path) if path else self.name
 
     @property
     def is_factory(self):
@@ -247,7 +247,7 @@ class NetworkNode(models.Model):
     @property
     def supplier_name(self):
         """Имя поставщика (для удобного отображения)."""
-        return self.supplier.name if self.supplier else '-'
+        return self.supplier.name if self.supplier else "-"
 
     @property
     def products_list(self):

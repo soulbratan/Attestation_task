@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Q, Sum, Count
+from django.db.models import Sum, Count
 from .models import NetworkNode, Product
 from .serializers import (
     NetworkNodeSerializer,
@@ -22,11 +22,11 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated, IsActiveEmployee]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name', 'model']
-    ordering_fields = ['name', 'model', 'release_date', 'created_at']
-    ordering = ['-release_date']
+    search_fields = ["name", "model"]
+    ordering_fields = ["name", "model", "release_date", "created_at"]
+    ordering = ["-release_date"]
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=["get"])
     def network_nodes(self, request, pk=None):
         """Получить все звенья, связанные с продуктом."""
         product = self.get_object()
@@ -48,15 +48,15 @@ class NetworkNodeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsActiveEmployee]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = NetworkNodeFilter
-    search_fields = ['name', 'email', 'city', 'country', 'street']
-    ordering_fields = ['name', 'level', 'city', 'debt_to_supplier', 'created_at']
-    ordering = ['-created_at']
+    search_fields = ["name", "email", "city", "country", "street"]
+    ordering_fields = ["name", "level", "city", "debt_to_supplier", "created_at"]
+    ordering = ["-created_at"]
 
     def get_serializer_class(self):
         """Выбор сериализатора в зависимости от действия."""
-        if self.action == 'create':
+        if self.action == "create":
             return NetworkNodeCreateSerializer
-        elif self.action in ['update', 'partial_update']:
+        elif self.action in ["update", "partial_update"]:
             return NetworkNodeUpdateSerializer
         return NetworkNodeSerializer
 
@@ -65,13 +65,13 @@ class NetworkNodeViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
 
         # Дополнительная фильтрация по параметрам запроса
-        country = self.request.query_params.get('country', None)
+        country = self.request.query_params.get("country", None)
         if country:
             queryset = queryset.filter(country__iexact=country)
 
-        return queryset.select_related('supplier').prefetch_related('products')
+        return queryset.select_related("supplier").prefetch_related("products")
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def statistics(self, request):
         """Статистика по сети."""
         total_nodes = NetworkNode.objects.count()
@@ -80,23 +80,23 @@ class NetworkNodeViewSet(viewsets.ModelViewSet):
         individual = NetworkNode.objects.filter(node_type=NetworkNode.NodeType.INDIVIDUAL).count()
 
         total_debt = NetworkNode.objects.aggregate(
-            total_debt=Sum('debt_to_supplier')
-        )['total_debt'] or 0
+            total_debt=Sum("debt_to_supplier")
+        )["total_debt"] or 0
 
-        cities = NetworkNode.objects.values('city').annotate(
-            count=Count('id')
-        ).order_by('-count')[:10]
+        cities = NetworkNode.objects.values("city").annotate(
+            count=Count("id")
+        ).order_by("-count")[:10]
 
         return Response({
-            'total_nodes': total_nodes,
-            'factories': factories,
-            'retail_networks': retail,
-            'individual_entrepreneurs': individual,
-            'total_debt': float(total_debt),
-            'top_cities': list(cities)
+            "total_nodes": total_nodes,
+            "factories": factories,
+            "retail_networks": retail,
+            "individual_entrepreneurs": individual,
+            "total_debt": float(total_debt),
+            "top_cities": list(cities)
         })
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=["post"])
     def clear_debt(self, request, pk=None):
         """Очистить задолженность у конкретного звена."""
         node = self.get_object()
@@ -106,24 +106,24 @@ class NetworkNodeViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(node)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def bulk_clear_debt(self, request):
         """Массовая очистка задолженности."""
-        ids = request.data.get('ids', [])
+        ids = request.data.get("ids", [])
         if not ids:
             return Response(
-                {'error': 'Не указаны ID звеньев.'},
+                {"error": "Не указаны ID звеньев."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         updated = NetworkNode.objects.filter(id__in=ids).update(debt_to_supplier=0)
 
         return Response({
-            'message': f'Задолженность очищена у {updated} звеньев.',
-            'updated_count': updated
+            "message": f"Задолженность очищена у {updated} звеньев.",
+            "updated_count": updated
         })
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=["get"])
     def hierarchy(self, request, pk=None):
         """Получить иерархию от текущего звена вверх и вниз."""
         node = self.get_object()
@@ -133,10 +133,10 @@ class NetworkNodeViewSet(viewsets.ModelViewSet):
         current = node.supplier
         while current:
             suppliers_hierarchy.append({
-                'id': current.id,
-                'name': current.name,
-                'type': current.get_node_type_display(),
-                'level': current.level
+                "id": current.id,
+                "name": current.name,
+                "type": current.get_node_type_display(),
+                "level": current.level
             })
             current = current.supplier
 
@@ -145,37 +145,37 @@ class NetworkNodeViewSet(viewsets.ModelViewSet):
         clients = node.clients.all()
         for client in clients:
             clients_hierarchy.append({
-                'id': client.id,
-                'name': client.name,
-                'type': client.get_node_type_display(),
-                'level': client.level
+                "id": client.id,
+                "name": client.name,
+                "type": client.get_node_type_display(),
+                "level": client.level
             })
 
         return Response({
-            'current_node': {
-                'id': node.id,
-                'name': node.name,
-                'type': node.get_node_type_display(),
-                'level': node.level
+            "current_node": {
+                "id": node.id,
+                "name": node.name,
+                "type": node.get_node_type_display(),
+                "level": node.level
             },
-            'suppliers_hierarchy': suppliers_hierarchy,
-            'clients_hierarchy': clients_hierarchy
+            "suppliers_hierarchy": suppliers_hierarchy,
+            "clients_hierarchy": clients_hierarchy
         })
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def countries(self, request):
         """Получить список всех стран."""
-        countries = NetworkNode.objects.values_list('country', flat=True).distinct().order_by('country')
+        countries = NetworkNode.objects.values_list("country", flat=True).distinct().order_by("country")
         return Response(list(countries))
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def cities(self, request):
         """Получить список всех городов."""
-        country = request.query_params.get('country', None)
+        country = request.query_params.get("country", None)
         queryset = NetworkNode.objects.all()
 
         if country:
             queryset = queryset.filter(country__iexact=country)
 
-        cities = queryset.values_list('city', flat=True).distinct().order_by('city')
+        cities = queryset.values_list("city", flat=True).distinct().order_by("city")
         return Response(list(cities))
