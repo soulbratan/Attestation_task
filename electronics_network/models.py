@@ -1,7 +1,7 @@
-from django.db import models
-from django.core.validators import MinValueValidator, EmailValidator
-from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
+from django.core.validators import EmailValidator, MinValueValidator
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class Product(models.Model):
@@ -10,27 +10,13 @@ class Product(models.Model):
     Один продукт может быть у нескольких поставщиков.
     """
 
-    name = models.CharField(
-        _("название продукта"),
-        max_length=255,
-        help_text=_("Название продукта/оборудования")
-    )
+    name = models.CharField(_("название продукта"), max_length=255, help_text=_("Название продукта/оборудования"))
 
-    model = models.CharField(
-        _("модель продукта"),
-        max_length=255,
-        help_text=_("Модель продукта")
-    )
+    model = models.CharField(_("модель продукта"), max_length=255, help_text=_("Модель продукта"))
 
-    release_date = models.DateField(
-        _("дата выхода продукта"),
-        help_text=_("Дата выхода продукта на рынок")
-    )
+    release_date = models.DateField(_("дата выхода продукта"), help_text=_("Дата выхода продукта на рынок"))
 
-    created_at = models.DateTimeField(
-        _("время создания"),
-        auto_now_add=True
-    )
+    created_at = models.DateTimeField(_("время создания"), auto_now_add=True)
 
     class Meta:
         verbose_name = _("продукт")
@@ -59,19 +45,14 @@ class NetworkNode(models.Model):
         INDIVIDUAL = "individual", _("Индивидуальный предприниматель")
 
     # Основная информация
-    name = models.CharField(
-        _("название"),
-        max_length=255,
-        unique=True,
-        help_text=_("Название звена сети")
-    )
+    name = models.CharField(_("название"), max_length=255, unique=True, help_text=_("Название звена сети"))
 
     node_type = models.CharField(
         _("тип звена"),
         max_length=20,
         choices=NodeType.choices,
         default=NodeType.FACTORY,
-        help_text=_("Тип звена в сети")
+        help_text=_("Тип звена в сети"),
     )
 
     # Контактная информация
@@ -80,32 +61,16 @@ class NetworkNode(models.Model):
         max_length=255,
         unique=True,  # ✅ Email должен быть уникальным
         validators=[EmailValidator()],
-        help_text=_("Контактный email")
+        help_text=_("Контактный email"),
     )
 
-    country = models.CharField(
-        _("страна"),
-        max_length=100,
-        help_text=_("Страна расположения")
-    )
+    country = models.CharField(_("страна"), max_length=100, help_text=_("Страна расположения"))
 
-    city = models.CharField(
-        _("город"),
-        max_length=100,
-        help_text=_("Город расположения")
-    )
+    city = models.CharField(_("город"), max_length=100, help_text=_("Город расположения"))
 
-    street = models.CharField(
-        _("улица"),
-        max_length=255,
-        help_text=_("Улица расположения")
-    )
+    street = models.CharField(_("улица"), max_length=255, help_text=_("Улица расположения"))
 
-    house_number = models.CharField(
-        _("номер дома"),
-        max_length=20,
-        help_text=_("Номер дома/строения")
-    )
+    house_number = models.CharField(_("номер дома"), max_length=20, help_text=_("Номер дома/строения"))
 
     # Иерархические связи
     supplier = models.ForeignKey(
@@ -115,7 +80,7 @@ class NetworkNode(models.Model):
         blank=True,
         related_name="clients",
         verbose_name=_("поставщик"),
-        help_text=_("Поставщик оборудования (предыдущее звено в цепочке)")
+        help_text=_("Поставщик оборудования (предыдущее звено в цепочке)"),
     )
 
     # Связь с продуктами (ManyToMany)
@@ -123,7 +88,7 @@ class NetworkNode(models.Model):
         Product,
         related_name="network_nodes",
         verbose_name=_("продукты"),
-        help_text=_("Продукты, которые поставляет это звено")
+        help_text=_("Продукты, которые поставляет это звено"),
     )
 
     # Финансовая информация
@@ -133,21 +98,14 @@ class NetworkNode(models.Model):
         decimal_places=2,
         default=0.00,
         validators=[MinValueValidator(0)],
-        help_text=_("Задолженность в денежном выражении (до копеек)")
+        help_text=_("Задолженность в денежном выражении (до копеек)"),
     )
 
     # Системные поля
-    created_at = models.DateTimeField(
-        _("время создания"),
-        auto_now_add=True,
-        help_text=_("Время создания записи")
-    )
+    created_at = models.DateTimeField(_("время создания"), auto_now_add=True, help_text=_("Время создания записи"))
 
     level = models.IntegerField(
-        _("уровень в иерархии"),
-        default=0,
-        editable=False,
-        help_text=_("Уровень в иерархии сети (0 - завод)")
+        _("уровень в иерархии"), default=0, editable=False, help_text=_("Уровень в иерархии сети (0 - завод)")
     )
 
     class Meta:
@@ -183,9 +141,7 @@ class NetworkNode(models.Model):
 
         # 1. Завод не может иметь поставщика
         if self.node_type == self.NodeType.FACTORY and self.supplier:
-            raise ValidationError({
-                "supplier": _("Завод не может иметь поставщика.")
-            })
+            raise ValidationError({"supplier": _("Завод не может иметь поставщика.")})
 
         # 2. Завод всегда должен быть на уровне 0
         if self.node_type == self.NodeType.FACTORY and self.supplier is None and self.level != 0:
@@ -193,9 +149,7 @@ class NetworkNode(models.Model):
 
         # 3. Нельзя быть своим собственным поставщиком
         if self.supplier and self.supplier == self:
-            raise ValidationError({
-                "supplier": _("Звено не может быть своим собственным поставщиком.")
-            })
+            raise ValidationError({"supplier": _("Звено не может быть своим собственным поставщиком.")})
 
         # 4. Проверка циклических ссылок
         if self.supplier:
@@ -203,9 +157,7 @@ class NetworkNode(models.Model):
             visited = {self.id} if self.id else set()
             while current:
                 if current.id in visited:
-                    raise ValidationError({
-                        "supplier": _("Обнаружена циклическая ссылка в цепочке поставщиков.")
-                    })
+                    raise ValidationError({"supplier": _("Обнаружена циклическая ссылка в цепочке поставщиков.")})
                 if current.id:
                     visited.add(current.id)
                 current = current.supplier
@@ -213,16 +165,11 @@ class NetworkNode(models.Model):
         # 5. Максимальный уровень иерархии
         max_level = 10
         if self.level > max_level:
-            raise ValidationError(
-                _("Превышен максимальный уровень иерархии (%(max)s)."),
-                params={"max": max_level}
-            )
+            raise ValidationError(_("Превышен максимальный уровень иерархии (%(max)s)."), params={"max": max_level})
 
         # 6. Завод не может иметь задолженность
         if self.node_type == self.NodeType.FACTORY and self.debt_to_supplier > 0:
-            raise ValidationError({
-                "debt_to_supplier": _("Завод не может иметь задолженность перед поставщиком.")
-            })
+            raise ValidationError({"debt_to_supplier": _("Завод не может иметь задолженность перед поставщиком.")})
 
     def get_full_address(self):
         """Полный адрес звена."""

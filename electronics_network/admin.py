@@ -1,6 +1,8 @@
+from decimal import Decimal
+
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from decimal import Decimal
+
 from .models import NetworkNode, Product
 
 
@@ -13,11 +15,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_per_page = 20
     ordering = ("-release_date", "name")
 
-    fieldsets = (
-        (None, {
-            "fields": ("name", "model", "release_date")
-        }),
-    )
+    fieldsets = ((None, {"fields": ("name", "model", "release_date")}),)
 
     readonly_fields = ("created_at",)
 
@@ -41,7 +39,7 @@ class NetworkNodeAdmin(admin.ModelAdmin):
         "supplier_name",
         "debt_to_supplier",
         "products_count",
-        "created_at"
+        "created_at",
     )
 
     # Фильтры
@@ -55,22 +53,22 @@ class NetworkNodeAdmin(admin.ModelAdmin):
 
     # Поля в форме редактирования
     fieldsets = (
-        (_("Основная информация"), {
-            "fields": ("name", "node_type", "email", "supplier", "level")
-        }),
-        (_("Контактная информация"), {
-            "fields": ("country", "city", "street", "house_number"),
-        }),
-        (_("Продукты"), {
-            "fields": ("products",)
-        }),
-        (_("Финансовая информация"), {
-            "fields": ("debt_to_supplier",)
-        }),
-        (_("Системная информация"), {
-            "fields": ("created_at",),
-            "classes": ("collapse",),
-        }),
+        (_("Основная информация"), {"fields": ("name", "node_type", "email", "supplier", "level")}),
+        (
+            _("Контактная информация"),
+            {
+                "fields": ("country", "city", "street", "house_number"),
+            },
+        ),
+        (_("Продукты"), {"fields": ("products",)}),
+        (_("Финансовая информация"), {"fields": ("debt_to_supplier",)}),
+        (
+            _("Системная информация"),
+            {
+                "fields": ("created_at",),
+                "classes": ("collapse",),
+            },
+        ),
     )
 
     # Только для чтения
@@ -103,10 +101,7 @@ class NetworkNodeAdmin(admin.ModelAdmin):
     def clear_debt(self, request, queryset):
         """Очистить задолженность у выбранных объектов."""
         updated = queryset.update(debt_to_supplier=Decimal("0.00"))
-        self.message_user(
-            request,
-            f"Задолженность очищена у {updated} объектов."
-        )
+        self.message_user(request, f"Задолженность очищена у {updated} объектов.")
 
     clear_debt.short_description = "Очистить задолженность перед поставщиком"
 
@@ -131,20 +126,16 @@ class NetworkNodeAdmin(admin.ModelAdmin):
         # Добавляем подсказки для полей
         if "debt_to_supplier" in form.base_fields:
             form.base_fields["debt_to_supplier"].help_text = _(
-                "Задолженность в рублях с точностью до копеек. "
-                "У завода всегда должна быть 0."
+                "Задолженность в рублях с точностью до копеек. " "У завода всегда должна быть 0."
             )
 
         if "supplier" in form.base_fields:
             form.base_fields["supplier"].help_text = _(
-                "Предыдущее звено в цепочке поставок. "
-                "Завод не должен иметь поставщика."
+                "Предыдущее звено в цепочке поставок. " "Завод не должен иметь поставщика."
             )
 
         if "email" in form.base_fields:
-            form.base_fields["email"].help_text = _(
-                "Уникальный email адрес звена сети."
-            )
+            form.base_fields["email"].help_text = _("Уникальный email адрес звена сети.")
 
         return form
 
@@ -153,9 +144,7 @@ class NetworkNodeAdmin(admin.ModelAdmin):
         if db_field.name == "supplier":
             # Исключаем текущий объект из возможных поставщиков
             if request.resolver_match.kwargs.get("object_id"):
-                kwargs["queryset"] = NetworkNode.objects.exclude(
-                    id=request.resolver_match.kwargs["object_id"]
-                )
+                kwargs["queryset"] = NetworkNode.objects.exclude(id=request.resolver_match.kwargs["object_id"])
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 

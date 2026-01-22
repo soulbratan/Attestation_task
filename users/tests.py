@@ -1,8 +1,8 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
-from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient, APITestCase
 
 User = get_user_model()
 
@@ -15,7 +15,7 @@ class UserModelTests(TestCase):
             "email": "test@example.com",
             "password": "testpass123",
             "first_name": "Тест",
-            "last_name": "Пользователь"
+            "last_name": "Пользователь",
         }
 
     def test_create_user(self):
@@ -32,10 +32,7 @@ class UserModelTests(TestCase):
 
     def test_create_superuser(self):
         """Тест создания суперпользователя."""
-        superuser = User.objects.create_superuser(
-            email="admin@example.com",
-            password="admin123"
-        )
+        superuser = User.objects.create_superuser(email="admin@example.com", password="admin123")
 
         self.assertEqual(superuser.email, "admin@example.com")
         self.assertTrue(superuser.is_superuser)
@@ -70,7 +67,7 @@ class UserAPITests(APITestCase):
             password="testpass123",
             first_name="Активный",
             last_name="Сотрудник",
-            is_active_employee=True
+            is_active_employee=True,
         )
 
         # Создаем неактивного пользователя
@@ -79,7 +76,7 @@ class UserAPITests(APITestCase):
             password="testpass123",
             first_name="Неактивный",
             last_name="Сотрудник",
-            is_active_employee=False
+            is_active_employee=False,
         )
 
     def test_user_registration(self):
@@ -89,7 +86,7 @@ class UserAPITests(APITestCase):
             "password": "newpass123",
             "password2": "newpass123",
             "first_name": "Новый",
-            "last_name": "Пользователь"
+            "last_name": "Пользователь",
         }
 
         response = self.client.post(self.register_url, data, format="json")
@@ -110,7 +107,7 @@ class UserAPITests(APITestCase):
             "password": "pass123",
             "password2": "pass456",  # Не совпадает
             "first_name": "Новый",
-            "last_name": "Пользователь"
+            "last_name": "Пользователь",
         }
 
         response = self.client.post(self.register_url, data, format="json")
@@ -120,10 +117,7 @@ class UserAPITests(APITestCase):
 
     def test_user_login_success(self):
         """Тест успешного входа."""
-        data = {
-            "email": "active@example.com",
-            "password": "testpass123"
-        }
+        data = {"email": "active@example.com", "password": "testpass123"}
 
         response = self.client.post(self.login_url, data, format="json")
 
@@ -134,10 +128,7 @@ class UserAPITests(APITestCase):
 
     def test_user_login_inactive_employee(self):
         """Тест входа неактивного сотрудника."""
-        data = {
-            "email": "inactive@example.com",
-            "password": "testpass123"
-        }
+        data = {"email": "inactive@example.com", "password": "testpass123"}
 
         response = self.client.post(self.login_url, data, format="json")
 
@@ -147,10 +138,7 @@ class UserAPITests(APITestCase):
 
     def test_user_login_invalid_credentials(self):
         """Тест входа с неверными данными."""
-        data = {
-            "email": "active@example.com",
-            "password": "wrongpassword"
-        }
+        data = {"email": "active@example.com", "password": "wrongpassword"}
 
         response = self.client.post(self.login_url, data, format="json")
 
@@ -176,10 +164,7 @@ class UserAPITests(APITestCase):
         """Тест обновления профиля."""
         self.client.force_authenticate(user=self.active_user)
 
-        data = {
-            "first_name": "Обновленное",
-            "last_name": "Имя"
-        }
+        data = {"first_name": "Обновленное", "last_name": "Имя"}
 
         response = self.client.patch(self.profile_url, data, format="json")
 
@@ -202,15 +187,11 @@ class PermissionTests(TestCase):
 
         # Создаем разные типы пользователей
         self.active_user = User.objects.create_user(
-            email="active@example.com",
-            password="pass123",
-            is_active_employee=True
+            email="active@example.com", password="pass123", is_active_employee=True
         )
 
         self.inactive_user = User.objects.create_user(
-            email="inactive@example.com",
-            password="pass123",
-            is_active_employee=False
+            email="inactive@example.com", password="pass123", is_active_employee=False
         )
 
     def test_is_active_employee_permission_active(self):

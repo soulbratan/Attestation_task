@@ -43,12 +43,13 @@ class User(AbstractUser):
     Кастомная модель пользователя.
     Используем email в качестве уникального идентификатора.
     """
+
     username = None
     email = models.EmailField(_("email address"), unique=True)
     is_active_employee = models.BooleanField(
         _("active employee"),
         default=False,
-        help_text=_("Designates whether this user is an active employee with API access.")
+        help_text=_("Designates whether this user is an active employee with API access."),
     )
 
     USERNAME_FIELD = "email"

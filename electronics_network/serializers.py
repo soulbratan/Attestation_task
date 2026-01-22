@@ -1,6 +1,6 @@
-from rest_framework import serializers
-from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
+
 from .models import NetworkNode, Product
 
 
@@ -18,33 +18,16 @@ class NetworkNodeSerializer(serializers.ModelSerializer):
 
     products = ProductSerializer(many=True, read_only=True)
     product_ids = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Product.objects.all(),
-        write_only=True,
-        source="products",
-        required=False
+        many=True, queryset=Product.objects.all(), write_only=True, source="products", required=False
     )
 
-    supplier_name = serializers.CharField(
-        source="supplier.name",
-        read_only=True,
-        allow_null=True
-    )
+    supplier_name = serializers.CharField(source="supplier.name", read_only=True, allow_null=True)
 
-    node_type_display = serializers.CharField(
-        source="get_node_type_display",
-        read_only=True
-    )
+    node_type_display = serializers.CharField(source="get_node_type_display", read_only=True)
 
-    full_address = serializers.CharField(
-        source="get_full_address",
-        read_only=True
-    )
+    full_address = serializers.CharField(source="get_full_address", read_only=True)
 
-    hierarchy_path = serializers.CharField(
-        source="get_hierarchy_path",
-        read_only=True
-    )
+    hierarchy_path = serializers.CharField(source="get_hierarchy_path", read_only=True)
 
     class Meta:
         model = NetworkNode
@@ -66,7 +49,7 @@ class NetworkNodeSerializer(serializers.ModelSerializer):
             "debt_to_supplier",
             "level",
             "hierarchy_path",
-            "created_at"
+            "created_at",
         )
         read_only_fields = ("id", "level", "created_at", "node_type_display", "full_address", "hierarchy_path")
 
@@ -79,21 +62,17 @@ class NetworkNodeSerializer(serializers.ModelSerializer):
 
         # Проверка: завод не может иметь поставщика
         if node_type == NetworkNode.NodeType.FACTORY and supplier:
-            raise serializers.ValidationError({
-                "supplier": _("Завод не может иметь поставщика.")
-            })
+            raise serializers.ValidationError({"supplier": _("Завод не может иметь поставщика.")})
 
         # Проверка: завод не может иметь задолженность
         if node_type == NetworkNode.NodeType.FACTORY and debt_to_supplier > 0:
-            raise serializers.ValidationError({
-                "debt_to_supplier": _("Завод не может иметь задолженность перед поставщиком.")
-            })
+            raise serializers.ValidationError(
+                {"debt_to_supplier": _("Завод не может иметь задолженность перед поставщиком.")}
+            )
 
         # Проверка: нельзя быть своим собственным поставщиком
         if supplier and self.instance and supplier.id == self.instance.id:
-            raise serializers.ValidationError({
-                "supplier": _("Звено не может быть своим собственным поставщиком.")
-            })
+            raise serializers.ValidationError({"supplier": _("Звено не может быть своим собственным поставщиком.")})
 
         return data
 

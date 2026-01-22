@@ -1,22 +1,18 @@
-from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
+from rest_framework import serializers
+
 from .models import User
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Сериализатор для регистрации пользователя."""
+
     password = serializers.CharField(
-        write_only=True,
-        min_length=8,
-        style={"input_type": "password"},
-        validators=[validate_password]
+        write_only=True, min_length=8, style={"input_type": "password"}, validators=[validate_password]
     )
     password2 = serializers.CharField(
-        write_only=True,
-        min_length=8,
-        style={"input_type": "password"},
-        label="Confirm Password"
+        write_only=True, min_length=8, style={"input_type": "password"}, label="Confirm Password"
     )
 
     class Meta:
@@ -38,18 +34,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
             first_name=validated_data.get("first_name", ""),
             last_name=validated_data.get("last_name", ""),
-            is_active_employee=False  # По умолчанию не активный сотрудник
+            is_active_employee=False,  # По умолчанию не активный сотрудник
         )
         return user
 
 
 class UserLoginSerializer(serializers.Serializer):
     """Сериализатор для входа пользователя."""
+
     email = serializers.EmailField()
-    password = serializers.CharField(
-        write_only=True,
-        style={"input_type": "password"}
-    )
+    password = serializers.CharField(write_only=True, style={"input_type": "password"})
 
     def validate(self, data):
         email = data.get("email")

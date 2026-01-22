@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
+
 from .models import User
 
 
@@ -8,7 +9,15 @@ class CustomUserAdmin(UserAdmin):
     """Админ-панель для кастомной модели пользователя."""
 
     # Поля для отображения в списке
-    list_display = ("email", "first_name", "last_name", "is_active_employee", "is_staff", "is_superuser", "date_joined")
+    list_display = (
+        "email",
+        "first_name",
+        "last_name",
+        "is_active_employee",
+        "is_staff",
+        "is_superuser",
+        "date_joined",
+    )
 
     # Фильтры
     list_filter = ("is_active_employee", "is_staff", "is_superuser", "date_joined")
@@ -23,24 +32,43 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {"fields": ("email", "password")}),
         (_("Personal info"), {"fields": ("first_name", "last_name")}),
-        (_("Permissions"), {
-            "fields": ("is_active_employee", "is_active", "is_staff", "is_superuser", "groups", "user_permissions"),
-        }),
-        (_("Important dates"), {
-            "fields": ("last_login", "date_joined"),
-            "classes": ("collapse",),  # Сворачиваемый раздел
-        }),
+        (
+            _("Permissions"),
+            {
+                "fields": (
+                    "is_active_employee",
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                ),
+            },
+        ),
+        (
+            _("Important dates"),
+            {
+                "fields": ("last_login", "date_joined"),
+                "classes": ("collapse",),  # Сворачиваемый раздел
+            },
+        ),
     )
 
     # Поля при добавлении пользователя
     add_fieldsets = (
-        (None, {
-            "classes": ("wide",),
-            "fields": ("email", "password1", "password2", "first_name", "last_name"),
-        }),
-        (_("Permissions"), {
-            "fields": ("is_active_employee", "is_staff", "is_superuser"),
-        }),
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": ("email", "password1", "password2", "first_name", "last_name"),
+            },
+        ),
+        (
+            _("Permissions"),
+            {
+                "fields": ("is_active_employee", "is_staff", "is_superuser"),
+            },
+        ),
     )
 
     # Делаем поля только для чтения
@@ -99,8 +127,7 @@ class CustomUserAdmin(UserAdmin):
             form.base_fields["date_joined"].help_text = "Дата регистрации пользователя"
         if "is_active_employee" in form.base_fields:
             form.base_fields["is_active_employee"].help_text = _(
-                "Определяет, имеет ли пользователь доступ к API. "
-                "Только активные сотрудники могут использовать API."
+                "Определяет, имеет ли пользователь доступ к API. " "Только активные сотрудники могут использовать API."
             )
 
         return form

@@ -1,10 +1,12 @@
+from datetime import date, timedelta
+
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
-from django.contrib.auth import get_user_model
-from .models import Product, NetworkNode
-from datetime import date, timedelta
+from rest_framework.test import APIClient, APITestCase
+
+from .models import NetworkNode, Product
 
 User = get_user_model()
 
@@ -16,7 +18,7 @@ class ProductModelTests(TestCase):
         self.product_data = {
             "name": "Смартфон",
             "model": "X-Phone Pro",
-            "release_date": date.today() - timedelta(days=30)
+            "release_date": date.today() - timedelta(days=30),
         }
 
     def test_create_product(self):
@@ -45,23 +47,15 @@ class NetworkNodeModelTests(TestCase):
     """Тесты для модели NetworkNode."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            is_active_employee=True
-        )
+        self.user = User.objects.create_user(email="test@example.com", password="testpass123", is_active_employee=True)
 
         # Создаем продукты
         self.product1 = Product.objects.create(
-            name="Ноутбук",
-            model="UltraBook Z",
-            release_date=date.today() - timedelta(days=60)
+            name="Ноутбук", model="UltraBook Z", release_date=date.today() - timedelta(days=60)
         )
 
         self.product2 = Product.objects.create(
-            name="Планшет",
-            model="TabMaster 10",
-            release_date=date.today() - timedelta(days=90)
+            name="Планшет", model="TabMaster 10", release_date=date.today() - timedelta(days=90)
         )
 
     def test_create_factory(self):
@@ -73,7 +67,7 @@ class NetworkNodeModelTests(TestCase):
             country="Россия",
             city="Новосибирск",
             street="Промышленная",
-            house_number="15А"
+            house_number="15А",
         )
 
         self.assertEqual(factory.name, "Электротехнический завод 'Восток'")
@@ -92,7 +86,7 @@ class NetworkNodeModelTests(TestCase):
             country="Россия",
             city="Москва",
             street="Заводская",
-            house_number="1"
+            house_number="1",
         )
 
         # Создаем розничную сеть
@@ -105,7 +99,7 @@ class NetworkNodeModelTests(TestCase):
             street="Тверская",
             house_number="25",
             supplier=factory,
-            debt_to_supplier=50000.00
+            debt_to_supplier=50000.00,
         )
 
         self.assertEqual(retail.node_type, NetworkNode.NodeType.RETAIL)
@@ -122,7 +116,7 @@ class NetworkNodeModelTests(TestCase):
             country="Россия",
             city="Москва",
             street="Заводская",
-            house_number="1"
+            house_number="1",
         )
 
         # Пытаемся создать завод с поставщиком
@@ -135,7 +129,7 @@ class NetworkNodeModelTests(TestCase):
                 city="Санкт-Петербург",
                 street="Заводская",
                 house_number="2",
-                supplier=factory1  # Не должно быть разрешено
+                supplier=factory1,  # Не должно быть разрешено
             )
 
     def test_factory_cannot_have_debt(self):
@@ -149,7 +143,7 @@ class NetworkNodeModelTests(TestCase):
                 city="Москва",
                 street="Заводская",
                 house_number="1",
-                debt_to_supplier=10000.00  # Не должно быть разрешено
+                debt_to_supplier=10000.00,  # Не должно быть разрешено
             )
 
     def test_full_address_property(self):
@@ -161,7 +155,7 @@ class NetworkNodeModelTests(TestCase):
             country="Россия",
             city="Москва",
             street="Тверская",
-            house_number="25"
+            house_number="25",
         )
 
         expected_address = "Россия, Москва, Тверская, д. 25"
@@ -176,7 +170,7 @@ class NetworkNodeModelTests(TestCase):
             country="Россия",
             city="Москва",
             street="Тверская",
-            house_number="25"
+            house_number="25",
         )
 
         # Добавляем продукты
@@ -195,7 +189,7 @@ class NetworkNodeModelTests(TestCase):
             country="Россия",
             city="Москва",
             street="Заводская",
-            house_number="1"
+            house_number="1",
         )
 
         retail = NetworkNode.objects.create(
@@ -206,7 +200,7 @@ class NetworkNodeModelTests(TestCase):
             city="Москва",
             street="Тверская",
             house_number="25",
-            supplier=factory
+            supplier=factory,
         )
 
         ip = NetworkNode.objects.create(
@@ -217,7 +211,7 @@ class NetworkNodeModelTests(TestCase):
             city="Москва",
             street="Арбат",
             house_number="15",
-            supplier=retail
+            supplier=retail,
         )
 
         self.assertEqual(ip.get_hierarchy_path(), "Завод → Розничная сеть → ИП Иванов")
@@ -231,25 +225,17 @@ class ProductAPITests(APITestCase):
         self.client = APIClient()
 
         # Создаем активного пользователя
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            is_active_employee=True
-        )
+        self.user = User.objects.create_user(email="test@example.com", password="testpass123", is_active_employee=True)
 
         self.client.force_authenticate(user=self.user)
 
         # Создаем тестовые продукты
         self.product1 = Product.objects.create(
-            name="Смартфон",
-            model="X-Phone Pro",
-            release_date=date.today() - timedelta(days=30)
+            name="Смартфон", model="X-Phone Pro", release_date=date.today() - timedelta(days=30)
         )
 
         self.product2 = Product.objects.create(
-            name="Ноутбук",
-            model="UltraBook Z",
-            release_date=date.today() - timedelta(days=60)
+            name="Ноутбук", model="UltraBook Z", release_date=date.today() - timedelta(days=60)
         )
 
         self.product_list_url = reverse("product-list")
@@ -264,11 +250,7 @@ class ProductAPITests(APITestCase):
 
     def test_create_product(self):
         """Тест создания продукта."""
-        data = {
-            "name": "Планшет",
-            "model": "TabMaster 10",
-            "release_date": date.today().isoformat()
-        }
+        data = {"name": "Планшет", "model": "TabMaster 10", "release_date": date.today().isoformat()}
 
         response = self.client.post(self.product_list_url, data, format="json")
 
@@ -286,10 +268,7 @@ class ProductAPITests(APITestCase):
 
     def test_update_product(self):
         """Тест обновления продукта."""
-        data = {
-            "name": "Обновленный смартфон",
-            "model": "X-Phone Pro Max"
-        }
+        data = {"name": "Обновленный смартфон", "model": "X-Phone Pro Max"}
 
         response = self.client.patch(self.product_detail_url, data, format="json")
 
@@ -325,19 +304,13 @@ class NetworkNodeAPITests(APITestCase):
         self.client = APIClient()
 
         # Создаем активного пользователя
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            is_active_employee=True
-        )
+        self.user = User.objects.create_user(email="test@example.com", password="testpass123", is_active_employee=True)
 
         self.client.force_authenticate(user=self.user)
 
         # Создаем тестовые продукты
         self.product1 = Product.objects.create(
-            name="Смартфон",
-            model="X-Phone Pro",
-            release_date=date.today() - timedelta(days=30)
+            name="Смартфон", model="X-Phone Pro", release_date=date.today() - timedelta(days=30)
         )
 
         # Создаем завод
@@ -348,7 +321,7 @@ class NetworkNodeAPITests(APITestCase):
             country="Россия",
             city="Новосибирск",
             street="Промышленная",
-            house_number="15А"
+            house_number="15А",
         )
 
         # Создаем розничную сеть
@@ -361,7 +334,7 @@ class NetworkNodeAPITests(APITestCase):
             street="Ленина",
             house_number="100",
             supplier=self.factory,
-            debt_to_supplier=50000.00
+            debt_to_supplier=50000.00,
         )
 
         # Добавляем продукт к розничной сети
@@ -389,7 +362,7 @@ class NetworkNodeAPITests(APITestCase):
             "house_number": "15",
             "supplier": self.retail.id,
             "debt_to_supplier": 15000.00,
-            "product_ids": [self.product1.id]
+            "product_ids": [self.product1.id],
         }
 
         response = self.client.post(self.node_list_url, data, format="json")
@@ -410,10 +383,7 @@ class NetworkNodeAPITests(APITestCase):
 
     def test_update_network_node(self):
         """Тест обновления звена."""
-        data = {
-            "name": "Обновленная сеть магазинов",
-            "city": "Москва"
-        }
+        data = {"name": "Обновленная сеть магазинов", "city": "Москва"}
 
         response = self.client.patch(self.node_detail_url, data, format="json")
 
@@ -426,9 +396,7 @@ class NetworkNodeAPITests(APITestCase):
 
     def test_cannot_update_debt_via_api(self):
         """Тест: нельзя обновить задолженность через API."""
-        data = {
-            "debt_to_supplier": 0  # Пытаемся обнулить долг
-        }
+        data = {"debt_to_supplier": 0}  # Пытаемся обнулить долг
 
         response = self.client.patch(self.node_detail_url, data, format="json")
 
@@ -489,23 +457,15 @@ class PermissionTests(APITestCase):
 
         # Создаем разных пользователей
         self.active_user = User.objects.create_user(
-            email="active@example.com",
-            password="testpass123",
-            is_active_employee=True
+            email="active@example.com", password="testpass123", is_active_employee=True
         )
 
         self.inactive_user = User.objects.create_user(
-            email="inactive@example.com",
-            password="testpass123",
-            is_active_employee=False
+            email="inactive@example.com", password="testpass123", is_active_employee=False
         )
 
         # Создаем продукт
-        self.product = Product.objects.create(
-            name="Тестовый продукт",
-            model="Test Model",
-            release_date=date.today()
-        )
+        self.product = Product.objects.create(name="Тестовый продукт", model="Test Model", release_date=date.today())
 
         self.product_list_url = reverse("product-list")
 
